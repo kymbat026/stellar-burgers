@@ -1,21 +1,35 @@
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+
+import { selectIngredients } from '../../services/slices/ingredientsSlice';
+import {
+  fetchOrderByNumber,
+  selectSelectedOrder,
+  selectSelectedOrderLoading,
+  selectOrderError,
+} from '../../services/slices/orderSlice';
+import { useDispatch, useSelector } from '../../services/store';
 
 import type { TIngredient } from '@utils-types';
-
 export const OrderInfo = (): React.JSX.Element => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+  const dispatch = useDispatch();
+  const { number } = useParams<{ number: string }>();
 
-  const ingredients: TIngredient[] = [];
+  const selectedOrder = useSelector(selectSelectedOrder);
+  const isLoading = useSelector(selectSelectedOrderLoading);
+  const error = useSelector(selectOrderError);
+
+  useEffect(() => {
+    if (number) {
+      void dispatch(fetchOrderByNumber(Number(number)));
+    }
+  }, [dispatch, number]);
+
+  /** TODO: взять переменные orderData и ingredients из стора */
+  const orderData = selectedOrder;
+
+  const ingredients = useSelector(selectIngredients);
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
@@ -61,5 +75,16 @@ export const OrderInfo = (): React.JSX.Element => {
     return <Preloader />;
   }
 
+  if (isLoading) {
+    return <Preloader />;
+  }
+
+  if (error) {
+    return <p>Ошибка загрузки заказа: {error}</p>;
+  }
+
+  if (!orderInfo) {
+    return <p>Информация о заказе не найдена</p>;
+  }
   return <OrderInfoUI orderInfo={orderInfo} />;
 };
