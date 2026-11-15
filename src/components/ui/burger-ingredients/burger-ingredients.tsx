@@ -42,12 +42,14 @@ export const BurgerIngredientsUI = memo(function BurgerIngredientsUI({
             ingredients={buns}
             ref={bunsRef}
           />
+
           <IngredientsCategory
             title="Начинки"
             titleRef={titleMainRef}
             ingredients={mains}
             ref={mainsRef}
           />
+
           <IngredientsCategory
             title="Соусы"
             titleRef={titleSaucesRef}

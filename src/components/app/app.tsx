@@ -193,7 +193,7 @@ const RouteComponent = (): React.JSX.Element => {
           <Route
             path="/feed/:number"
             element={
-              <RouteModal title="Информация о заказе" fallbackPath="/feed">
+              <RouteModal title="" fallbackPath="/feed">
                 <OrderInfo />
               </RouteModal>
             }
@@ -202,7 +202,7 @@ const RouteComponent = (): React.JSX.Element => {
           <Route
             path="/ingredients/:id"
             element={
-              <RouteModal title="Детали ингредиента" fallbackPath="/">
+              <RouteModal title="" fallbackPath="/">
                 <IngredientDetails />
               </RouteModal>
             }
@@ -212,7 +212,7 @@ const RouteComponent = (): React.JSX.Element => {
             path="/profile/orders/:number"
             element={
               <ProtectedRoute>
-                <RouteModal title="Информация о заказе" fallbackPath="/profile/orders">
+                <RouteModal title="" fallbackPath="/profile/orders">
                   <OrderInfo />
                 </RouteModal>
               </ProtectedRoute>
