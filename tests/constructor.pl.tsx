@@ -10,22 +10,35 @@ test.describe('Добавление ингредиентов в конструк
         await page.goto('/');
     });
     test('Булка добавляется в конструктор', async ({ page }) => {
-        const bunName = 'Краторная булка N-200i';
+  const bunName = 'Краторная булка N-200i';
 
-        const ingredient = page
-            .locator('li')
-            .filter({ hasText: bunName });
+  const ingredient = page
+    .locator('li')
+    .filter({ hasText: bunName });
 
-        await ingredient.getByRole('button', { name: 'Добавить' }).click();
+  // Проверяем, что до добавления булки нет
+  await expect(
+    page.getByText(`${bunName} (верх)`)
+  ).not.toBeVisible();
 
-        await expect(
-            page.getByText(`${bunName} (верх)`)
-        ).toBeVisible();
+  await expect(
+    page.getByText(`${bunName} (низ)`)
+  ).not.toBeVisible();
 
-        await expect(
-            page.getByText(`${bunName} (низ)`)
-        ).toBeVisible();
-    });
+  // Добавляем булку
+  await ingredient.getByRole('button', { name: 'Добавить' }).click();
+
+  // Проверяем, что булка появилась
+  await expect(
+    page.getByText(`${bunName} (верх)`)
+  ).toBeVisible();
+
+  await expect(
+    page.getByText(`${bunName} (низ)`)
+  ).toBeVisible();
+});
+        
+    
     test('Начинка добавляется в конструктор', async ({ page }) => {
         const ingredientName = 'Биокотлета из марсианской Магнолии';
 
@@ -33,12 +46,19 @@ test.describe('Добавление ингредиентов в конструк
             .locator('li')
             .filter({ hasText: ingredientName });
 
+        const burgerConstructor = page.getByTestId('burger-constructor');
+
+        await expect(
+            burgerConstructor.getByText(ingredientName, { exact: true })
+        ).toHaveCount(0);
+
         await ingredient.getByRole('button', { name: 'Добавить' }).click();
 
         await expect(
-            page.getByText(ingredientName, { exact: true })
-        ).toHaveCount(2);
+            burgerConstructor.getByText(ingredientName, { exact: true })
+        ).toHaveCount(1);
     });
+
 });
 test.describe('Модальное окно ингредиента', () => {
     test.beforeEach(async ({ page }) => {
@@ -50,19 +70,18 @@ test.describe('Модальное окно ингредиента', () => {
         await page.goto('/');
     });
 
-    test('Открывается модальное окно ингредиента', async ({ page }) => {
-        const ingredientName = 'Краторная булка N-200i';
+    
+test('Открывается модальное окно ингредиента', async ({ page }) => {
+    const ingredientName = 'Краторная булка N-200i';
+    const modals = page.locator('#modals');
+    await expect(modals).toBeEmpty();
+    await page.getByText(ingredientName, { exact: true }).click();
+    await expect(modals.getByText('Детали ингредиента')).toBeVisible();
+    await expect(
+        modals.getByText(ingredientName, { exact: true })
+    ).toBeVisible();
+});
 
-        await page.getByText(ingredientName, { exact: true }).click();
-
-        await expect(
-            page.getByText(ingredientName, { exact: true })
-        ).toHaveCount(2);
-
-        await expect(
-            page.getByText('Детали ингредиента')
-        ).toBeVisible();
-    });
     test('Модальное окно закрывается по нажатию на крестик', async ({ page }) => {
         const ingredientName = 'Краторная булка N-200i';
 
@@ -113,37 +132,74 @@ test.describe('Оформление заказа', () => {
 
         await page.goto('/');
     });
-    test('Пользователь может оформить заказ', async ({ page }) => {
-        const bunName = 'Краторная булка N-200i';
-        const fillingName = 'Биокотлета из марсианской Магнолии';
+     
+test('Пользователь может оформить заказ', async ({ page }) => {
+    const bunName = 'Краторная булка N-200i';
+    const fillingName = 'Биокотлета из марсианской Магнолии';
 
-        await page
-            .locator('li')
-            .filter({ hasText: bunName })
-            .getByRole('button', { name: 'Добавить' })
-            .click();
+    const burgerConstructor = page.getByTestId('burger-constructor');
+    const modals = page.locator('#modals');
 
-        await page
-            .locator('li')
-            .filter({ hasText: fillingName })
-            .getByRole('button', { name: 'Добавить' })
-            .click();
+    // Проверяем начальное состояние
+    await expect(modals).toBeEmpty();
 
-        await page.getByRole('button', { name: 'Оформить заказ' }).click();
+    await expect(
+        burgerConstructor.getByText(`${bunName} (верх)`)
+    ).toHaveCount(0);
 
-        await expect(page.getByText('12345')).toBeVisible();
+    await expect(
+        burgerConstructor.getByText(fillingName, { exact: true })
+    ).toHaveCount(0);
 
-        await expect(
-            page.getByText('Выберите булки')
-        ).toHaveCount(2);
+    // Добавляем булку
+    await page
+        .locator('li')
+        .filter({ hasText: bunName })
+        .getByRole('button', { name: 'Добавить' })
+        .click();
 
-        await expect(
-            page.getByText('Выберите начинку')
-        ).toBeVisible();
-        await page.getByRole('button', { name: 'Закрыть' }).click();
+    // Добавляем начинку
+    await page
+        .locator('li')
+        .filter({ hasText: fillingName })
+        .getByRole('button', { name: 'Добавить' })
+        .click();
 
-        await expect(
-            page.getByText('12345')
-        ).not.toBeVisible();
-    });
+    // Проверяем собранный конструктор
+    await expect(
+        burgerConstructor.getByText(`${bunName} (верх)`)
+    ).toBeVisible();
+
+    await expect(
+        burgerConstructor.getByText(`${bunName} (низ)`)
+    ).toBeVisible();
+
+    await expect(
+        burgerConstructor.getByText(fillingName, { exact: true })
+    ).toBeVisible();
+
+    // Перед оформлением модального окна нет
+    await expect(modals).toBeEmpty();
+
+    // Оформляем заказ
+    await page.getByRole('button', { name: 'Оформить заказ' }).click();
+
+    // Номер заказа появился именно в модальном окне
+    await expect(modals.getByText('12345')).toBeVisible();
+
+    // После оформления конструктор очистился
+    await expect(
+        burgerConstructor.getByText('Выберите булки')
+    ).toHaveCount(2);
+
+    await expect(
+        burgerConstructor.getByText('Выберите начинку')
+    ).toBeVisible();
+
+    // Закрываем модальное окно
+    await modals.getByRole('button', { name: 'Закрыть' }).click();
+
+    await expect(modals).toBeEmpty();
+});
+
 });

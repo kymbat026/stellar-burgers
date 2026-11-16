@@ -74,8 +74,9 @@ describe('constructorSlice', () => {
     expect(result.ingredients[0]).toEqual(action.payload);
     expect(result.bun).toBeNull();
   });
+
   test('Удаляет начинку из конструктора', () => {
-    const filling = {
+    const firstIngredient = {
       _id: '2',
       name: 'Тестовая котлета',
       type: 'main',
@@ -87,20 +88,31 @@ describe('constructorSlice', () => {
       image: 'image.png',
       image_mobile: 'image-mobile.png',
       image_large: 'image-large.png',
+      id: 'first-id',
     };
 
-    const action = addIngredient(filling);
+    const secondIngredient = {
+      ...firstIngredient,
+      _id: '3',
+      name: 'Тестовый сыр',
+      id: 'second-id',
+    };
 
-    const stateWithFilling = constructorReducer(undefined, action);
+    const initialState = {
+      bun: null,
+      ingredients: [firstIngredient, secondIngredient],
+    };
 
     const result = constructorReducer(
-      stateWithFilling,
-      removeIngredient(action.payload.id)
+      initialState,
+      removeIngredient(firstIngredient.id)
     );
 
-    expect(result.ingredients).toEqual([]);
+    expect(result.ingredients).toHaveLength(1);
+    expect(result.ingredients).toEqual([secondIngredient]);
     expect(result.bun).toBeNull();
   });
+
   test('Изменяет порядок ингредиентов', () => {
     const firstIngredient = {
       _id: '1',
