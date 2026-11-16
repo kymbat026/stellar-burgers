@@ -11,6 +11,7 @@ export const IngredientDetailsUI = memo(function IngredientDetailsUI({
 
   return (
     <div className={styles.content}>
+      <h2 className="text text_type_main-large mb-5">Детали ингредиента</h2>
       <img alt="изображение ингредиента." src={image_large} />
       <h3 className="text text_type_main-medium mt-2 mb-4">{name}</h3>
       <ul className={`${styles.nutritional_values} text_type_main-default`}>
